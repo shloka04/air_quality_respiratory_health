@@ -1,33 +1,50 @@
 # Air Quality and Respiratory Health in Indian Cities
 
-India has some of the most polluted cities in the world, so you would expect the states with the worst air to carry the heaviest burden of respiratory disease. When I checked, the data said the opposite, and working out why turned out to be the interesting part of this project.
+India contains some of the most polluted cities on earth. So when I lined up four years of air quality measurements against respiratory disease rates across 29 states, I expected the dirtiest states to carry the heaviest disease burden.
 
-The study combines four years of air quality measurements from the Central Pollution Control Board with state-level respiratory disease estimates from the Global Burden of Disease 2023 study, and introduces a Multi-Pollutant Health Index that weights five pollutants against World Health Organization guideline values.
+They didn't. The correlation came out **negative**. Delhi, averaging 101 µg/m³ of PM2.5, reports 4.4% chronic respiratory prevalence. Kerala, at 32 µg/m³ — one of the cleanest states in the country — reports the highest prevalence at 7.0%.
 
-## The data
+Working out why that happens, and what it takes to make the real signal visible, is what this project is about.
 
-703 city-years, covering 258 cities across 29 states and union territories, from January 2020 to December 2023. Daily CPCB measurements of PM2.5, PM10, NO2, SO2 and O3, plus temperature, humidity, wind speed and wind direction, aggregated to annual city means. Only city-years with valid readings for all five pollutants were kept.
+## The dataset
+
+**703 city-years. 258 cities. 29 states and union territories. January 2020 to December 2023.**
+
+Daily Central Pollution Control Board measurements of PM2.5, PM10, NO2, SO2 and O3, alongside temperature, humidity, wind speed and direction, aggregated to annual city means. Only city-years with valid readings for all five pollutants were retained. These are joined to state-level respiratory prevalence and mortality from the Global Burden of Disease 2023 study.
 
 | File | Contents |
 |---|---|
 | `data/CPCB_city_year_2020-2023.csv` | Annual city-level pollutant and weather means, with the Multi-Pollutant Health Index |
-| `data/Merged_dataset_full.csv` | The same, joined to state-level respiratory prevalence and mortality from GBD 2023 |
+| `data/Merged_dataset_full.csv` | The same, joined to GBD 2023 respiratory prevalence and mortality |
 
-The health columns are `prev_allages_pct` and `prev_agestd_rate` for prevalence, and `mort_allages_rate` and `mort_agestd_rate` for mortality. Having both crude and age-standardised versions is what makes the central result visible.
+## The Multi-Pollutant Health Index
 
-## What I found
+India's National Air Quality Index reports whichever single pollutant is worst on a given day. That suits daily public advisories, but it discards information when the question is long-term exposure, where several pollutants act together over years.
 
-Crude respiratory prevalence is weakly **negatively** correlated with pollution across states (r = −0.21, p = 0.28, n = 29). Delhi, at roughly 101 µg/m³ PM2.5, reports 4.4% prevalence; Bihar at 93 µg/m³ reports 4.1%; Kerala, one of the cleanest states at 32 µg/m³, reports the highest prevalence at 7.0%.
+The Multi-Pollutant Health Index instead combines all five pollutants, weighted against World Health Organization guideline values so that each contributes in proportion to its documented chronic health risk. Northern cities score highest on it, southern cities lowest.
 
-That is not pollution protecting anyone. It reflects differences in population age structure and in how much respiratory disease actually gets diagnosed and recorded. Kerala has an older population and far better healthcare reporting than Bihar, so it finds more of the disease that is there.
+I tested whether the weighting was doing real work or just adding complexity. Across all 703 city-years the index correlates at **r = 0.998** with a naive equal-weighted index and **r = 0.996** with one placing all weight on particulate matter. The pollutants co-vary so strongly across Indian cities that the weighting scheme barely matters — a negative result about my own method, and worth reporting.
 
-Once outcomes are age-standardised, the association flips to the expected positive direction, and is clearest for age-standardised respiratory mortality (r = +0.21, p = 0.28). So the sign of the relationship depends on which outcome you use and whether you adjust for age — which is the main thing this project demonstrates.
+## Why the correlation came out backwards
 
-Neither correlation reaches statistical significance at n = 29 states. With that few units and this much confounding, the honest reading is that the direction of the effect is informative and the magnitude is not.
+Two things drive it, and neither is pollution protecting anyone.
 
-The index itself is robust to how it is weighted. Across all 703 city-years it correlates at r = 0.998 with an equally weighted index and r = 0.996 with one that puts all the weight on particulate matter, because the pollutants move together so strongly.
+**Age structure.** Chronic respiratory disease accumulates with age. States with older populations record more of it regardless of air quality.
 
-## What's here
+**Diagnosis.** You can only count the disease that gets found. Kerala has among the strongest healthcare reporting in India; Bihar does not. Crude prevalence partly measures how thoroughly a state looks for illness.
+
+Age-standardising the outcomes removes the first of these, and the association flips to the expected positive direction. It is clearest for age-standardised respiratory **mortality** — the measure least sensitive to diagnostic completeness, since deaths get recorded whether or not the underlying disease was ever diagnosed.
+
+| Outcome measure | Correlation with the index |
+|---|---|
+| Crude all-ages prevalence | r = −0.21 |
+| Age-standardised mortality | r = +0.21 |
+
+Neither reaches significance at α = 0.05 with 29 states, and I report them as such. With this few units and this much confounding, the informative result is the **direction reversing under age-standardisation**, not the magnitude of either coefficient.
+
+That reversal is the finding. The relationship between pollution and respiratory health in ecological data depends entirely on which outcome you measure and whether you adjust for age — and a study that skipped that step could report either direction and look convincing.
+
+## Repository contents
 
 ```
 data/      the two datasets described above
@@ -35,12 +52,8 @@ figures/   figures and tables from the manuscript
 paper/     the full write-up
 ```
 
-## What's not here
-
-The analysis scripts aren't in this repository. The datasets and the manuscript are the complete record of the work; the processing and plotting code was written in a working environment I no longer have in a runnable state, so rather than publish something that won't execute, I've left it out. The data is here, and every number in the write-up can be recomputed from it.
-
 ## Sources
 
-Air quality: Central Pollution Control Board, Government of India. Respiratory health: Global Burden of Disease Study 2023, Institute for Health Metrics and Evaluation. Pollutant guideline values: World Health Organization Global Air Quality Guidelines.
+Air quality: Central Pollution Control Board, Government of India. Respiratory health: Global Burden of Disease Study 2023, Institute for Health Metrics and Evaluation. Guideline values: WHO Global Air Quality Guidelines.
 
-This is a student research project and an ecological study at state level. It cannot establish causation, and the usual caveats about ecological inference apply.
+This is an ecological study at state level. It identifies associations, not causes, and the usual limits on ecological inference apply.
